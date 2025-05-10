@@ -1,35 +1,34 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
-import openai
+from gpt4all import GPT4All
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont
+from moviepy.editor import TextClip
 import os
-from stability_sdk import client
-import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
-from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
-from dotenv import load_dotenv
-import tempfile
 import uuid
+from dotenv import load_dotenv
 
 # 加载环境变量
 load_dotenv()
 
-app = FastAPI(title="AI 内容生成 API")
+app = FastAPI(title="轻量级 AI 内容生成 API")
 
-# 配置 API 密钥
-openai.api_key = os.getenv("OPENAI_API_KEY")
-stability_api = client.StabilityInference(
-    key=os.getenv("STABILITY_API_KEY"),
-    verbose=True,
-)
+# 初始化模型
+print("正在加载模型...")
+text_model = GPT4All("ggml-gpt4all-j-v1.3-groovy")
+print("模型加载完成！")
 
 class TextRequest(BaseModel):
     prompt: str
     max_tokens: int = 100
 
 class ImageRequest(BaseModel):
-    prompt: str
+    text: str
     width: int = 512
     height: int = 512
+    background_color: str = "white"
+    text_color: str = "black"
 
 class VideoRequest(BaseModel):
     text: str
@@ -38,36 +37,38 @@ class VideoRequest(BaseModel):
 @app.post("/generate/text")
 async def generate_text(request: TextRequest):
     try:
-        response = openai.Completion.create(
-            model="text-davinci-003",
+        response = text_model.generate(
             prompt=request.prompt,
-            max_tokens=request.max_tokens
+            max_tokens=request.max_tokens,
+            temp=0.7
         )
-        return {"generated_text": response.choices[0].text.strip()}
+        return {"generated_text": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/generate/image")
 async def generate_image(request: ImageRequest):
     try:
-        answers = stability_api.generate(
-            prompt=request.prompt,
-            seed=123,
-            steps=30,
-            cfg_scale=7.0,
-            width=request.width,
-            height=request.height,
-            samples=1,
-        )
+        # 创建新图像
+        image = Image.new('RGB', (request.width, request.height), request.background_color)
+        draw = ImageDraw.Draw(image)
         
-        # 保存生成的图片
-        for resp in answers:
-            for artifact in resp.artifacts:
-                if artifact.type == generation.ARTIFACT_IMAGE:
-                    temp_file = f"temp_{uuid.uuid4()}.png"
-                    with open(temp_file, "wb") as f:
-                        f.write(artifact.binary)
-                    return FileResponse(temp_file, media_type="image/png")
+        # 尝试加载字体，如果失败则使用默认字体
+        try:
+            font = ImageFont.truetype("arial.ttf", 40)
+        except:
+            font = ImageFont.load_default()
+        
+        # 在图像上绘制文本
+        text_width = draw.textlength(request.text, font=font)
+        text_height = 40
+        position = ((request.width - text_width) // 2, (request.height - text_height) // 2)
+        draw.text(position, request.text, fill=request.text_color, font=font)
+        
+        # 保存图像
+        temp_file = f"temp_{uuid.uuid4()}.png"
+        image.save(temp_file)
+        return FileResponse(temp_file, media_type="image/png")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

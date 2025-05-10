@@ -1,12 +1,18 @@
-# AI 内容生成 API
+# 轻量级 AI 内容生成 API
 
-这是一个使用 FastAPI 构建的 AI 内容生成 API，可以生成文本、图像和视频内容。
+这是一个使用 FastAPI 构建的轻量级 AI 内容生成 API，可以生成文本、图像和视频内容。所有功能都使用轻量级库，无需大型模型。
 
 ## 功能特点
 
-- 文本生成：使用 OpenAI 的 GPT 模型生成文本
-- 图像生成：使用 Stability AI 的模型生成图像
+- 文本生成：使用 GPT4All 生成文本
+- 图像生成：使用 PIL 创建文本图像
 - 视频生成：使用 MoviePy 创建简单的文本视频
+
+## 系统要求
+
+- Python 3.8+
+- 至少 4GB RAM
+- 至少 2GB 可用磁盘空间
 
 ## 安装
 
@@ -19,12 +25,6 @@ cd <repository-name>
 2. 安装依赖：
 ```bash
 pip install -r requirements.txt
-```
-
-3. 创建 `.env` 文件并添加必要的 API 密钥：
-```
-OPENAI_API_KEY=your_openai_api_key
-STABILITY_API_KEY=your_stability_api_key
 ```
 
 ## 运行
@@ -53,9 +53,11 @@ python main.py
 - 请求体：
 ```json
 {
-    "prompt": "图像描述",
+    "text": "要显示的文本",
     "width": 512,
-    "height": 512
+    "height": 512,
+    "background_color": "white",
+    "text_color": "black"
 }
 ```
 
@@ -71,6 +73,7 @@ python main.py
 
 ## 注意事项
 
-- 确保您有有效的 API 密钥
+- 首次运行时，程序会自动下载 GPT4All 模型文件
 - 生成的临时文件会自动保存在服务器上
-- 建议在生产环境中实现文件清理机制 
+- 建议在生产环境中实现文件清理机制
+- 图像生成功能目前只支持文本到图像的转换 
