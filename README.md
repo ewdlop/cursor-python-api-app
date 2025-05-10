@@ -6,7 +6,7 @@
 
 - 文本生成：使用 GPT4All 生成文本
 - 图像生成：使用 PIL 创建文本图像
-- 视频生成：使用 MoviePy 创建简单的文本视频
+- 视频生成：使用 OpenCV 创建简单的文本视频
 
 ## 系统要求
 
@@ -67,7 +67,12 @@ python main.py
 ```json
 {
     "text": "要显示的文字",
-    "duration": 10
+    "duration": 10,
+    "width": 640,
+    "height": 480,
+    "fps": 30,
+    "background_color": [0, 0, 0],
+    "text_color": [255, 255, 255]
 }
 ```
 
@@ -76,8 +81,7 @@ python main.py
 - 首次运行时，程序会自动下载 GPT4All 模型文件
 - 生成的临时文件会自动保存在服务器上
 - 建议在生产环境中实现文件清理机制
-- 图像生成功能目前只支持文本到图像的转换 
-- brew install imagemagick
+- 视频生成使用 OpenCV，支持自定义分辨率和帧率
 
 ## shell
 
@@ -90,5 +94,15 @@ curl -X POST "http://localhost:8000/generate/image" -H "Content-Type: applicatio
 ```
 
 ```shell
-curl -X POST "http://localhost:8000/generate/video" -H "Content-Type: application/json" -d '{"text": "欢迎使用 内容生成 API", "duration": 5}'
+curl -X POST "http://localhost:8000/generate/video" \
+-H "Content-Type: application/json" \
+-d '{
+    "text": "欢迎使用 内容生成 API",
+    "duration": 5,
+    "width": 640,
+    "height": 480,
+    "fps": 30,
+    "background_color": [0, 0, 0],
+    "text_color": [255, 255, 255]
+}'
 ```
