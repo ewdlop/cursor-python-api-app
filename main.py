@@ -9,6 +9,9 @@ import os
 import uuid
 from dotenv import load_dotenv
 
+import os
+os.environ['IMAGEMAGICK_BINARY'] = '/opt/homebrew/bin/convert'
+
 # 加载环境变量
 load_dotenv()
 

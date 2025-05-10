@@ -77,3 +77,18 @@ python main.py
 - 生成的临时文件会自动保存在服务器上
 - 建议在生产环境中实现文件清理机制
 - 图像生成功能目前只支持文本到图像的转换 
+- brew install imagemagick
+
+## shell
+
+```shell
+curl -X POST "http://localhost:8000/generate/text" -H "Content-Type: application/json" -d '{"prompt": "写一首关于春天的诗", "max_tokens": 100}'
+```
+
+```shell
+curl -X POST "http://localhost:8000/generate/image" -H "Content-Type: application/json" -d '{"text": "Hello World", "width": 800, "height": 400, "background_color": "lightblue", "text_color": "darkblue"}'
+```
+
+```shell
+curl -X POST "http://localhost:8000/generate/video" -H "Content-Type: application/json" -d '{"text": "欢迎使用 内容生成 API", "duration": 5}'
+```
